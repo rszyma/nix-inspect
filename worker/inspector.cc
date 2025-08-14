@@ -1,22 +1,23 @@
 #include "inspector.hh"
 
-#include <nix/config.h>
-
 #include <memory>
-#include <nix/attr-path.hh>
-#include <nix/canon-path.hh>
-#include <nix/command.hh>
-#include <nix/eval-gc.hh>
-#include <nix/eval.hh>
-#include <nix/local-fs-store.hh>
-#include <nix/nixexpr.hh>
-#include <nix/shared.hh>
-#include <nix/store-api.hh>
-#include <nix/value-to-json.hh>
-#include <nix/value.hh>
+#include <nlohmann/json.hpp>
+#include <nix/expr/attr-path.hh>
+#include <nix/util/canon-path.hh>
+#include <nix/cmd/command.hh>
+#include <nix/expr/eval-gc.hh>
+#include <nix/expr/eval.hh>
+#include <nix/store/local-fs-store.hh>
+#include <nix/expr/nixexpr.hh>
+#include <nix/main/shared.hh>
+#include <nix/store/store-api.hh>
+#include <nix/expr/value-to-json.hh>
+#include <nix/expr/value.hh>
+#include <nix/flake/settings.hh>
+#include <nix/expr/eval-settings.hh>
 #include <string>
 
-#include "logging.hh"
+#include <nix/util/logging.hh>
 
 const auto MAX_SIZE = 32768;
 
@@ -82,7 +83,7 @@ std::shared_ptr<Value> NixInspector::inspect(std::string &attrPath) {
   return std::make_shared<Value>(vRes);
 }
 
-int32_t NixInspector::v_int(const Value &value) { return value.integer(); }
+int32_t NixInspector::v_int(const Value &value) { return value.integer().value; }
 float_t NixInspector::v_float(const Value &value) { return value.fpoint(); }
 bool NixInspector::v_bool(const Value &value) { return value.boolean(); }
 std::string NixInspector::v_string(const Value &value) {
@@ -113,7 +114,7 @@ nlohmann::json NixInspector::v_repr(const Value &value) {
     case nix::nFloat:
       return value.fpoint();
     case nix::nInt:
-      return value.integer();
+      return value.integer().value;
     case nix::nNull:
       return nullptr;
     case nix::nExternal:
@@ -136,7 +137,8 @@ nlohmann::json NixInspector::v_repr(const Value &value) {
 // }
 std::unique_ptr<std::vector<Value>> NixInspector::v_list(const Value &value) {
   auto collected = std::vector<Value>();
-  for (auto x : value.listItems()) {
+  auto listItems = value.listView();
+  for (auto x : listItems) {
     collected.emplace_back(*x);
   }
   return std::make_unique<std::vector<Value>>(collected);
@@ -144,8 +146,8 @@ std::unique_ptr<std::vector<Value>> NixInspector::v_list(const Value &value) {
 void init_nix_inspector() {
   nix::initNix();
   nix::initGC();
-  nix::flake::initLib(nix::flakeSettings);
-  logger = new CaptureLogger();
+  nix::flakeSettings.configureEvalSettings(nix::evalSettings);
+  logger = std::make_unique<CaptureLogger>();
 }
 ValueType NixInspector::v_type(const Value &value) { return value.type(); }
 

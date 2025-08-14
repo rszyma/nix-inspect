@@ -1,15 +1,12 @@
 #pragma once
 
-#include <nix/config.h>
-
 #include <memory>
-#include <nix/primops.hh>
-
-#include "command.hh"
-#include "eval.hh"
-#include "nixexpr.hh"
-#include "types.hh"
-#include "value.hh"
+#include <nix/expr/primops.hh>
+#include <nix/cmd/command.hh>
+#include <nix/expr/eval.hh>
+#include <nix/expr/nixexpr.hh>
+#include <nix/util/types.hh>
+#include <nix/expr/value.hh>
 
 using Value = nix::Value;
 struct NixInspector;
