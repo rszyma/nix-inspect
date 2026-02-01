@@ -25,6 +25,10 @@
       in {
         devShells.default = crateOutputs.devShell.overrideAttrs (old: {
           WORKER_BINARY_PATH = "./worker/build/nix-inspect";
+          
+          # https://discourse.nixos.org/t/rust-src-not-found-and-other-misadventures-of-developing-rust-on-nixos/11570/5
+          RUST_SRC_PATH = "${pkgs.rust.packages.stable.rustPlatform.rustLibSrc}";
+          
           packages =
             (old.packages or [])
             ++ (with pkgs; [
