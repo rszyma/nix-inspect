@@ -1,12 +1,12 @@
 #pragma once
 
 #include <memory>
-#include <nix/expr/primops.hh>
 #include <nix/cmd/command.hh>
 #include <nix/expr/eval.hh>
 #include <nix/expr/nixexpr.hh>
-#include <nix/util/types.hh>
+#include <nix/expr/primops.hh>
 #include <nix/expr/value.hh>
+#include <nix/util/types.hh>
 
 using Value = nix::Value;
 struct NixInspector;
@@ -34,7 +34,7 @@ class CaptureLogger : public Logger {
     oss << s << std::endl;
   }
 
-  void logEI(const ErrorInfo &ei) override {
+  void logEI(const ErrorInfo& ei) override {
     showErrorInfo(oss, ei, loggerSettings.showTrace.get());
   }
 };
@@ -43,25 +43,25 @@ class CaptureLogger : public Logger {
 // that's tied to the EvalCommand class.
 struct NixInspector : virtual EvalCommand {
  public:
-  EvalState *state;
-  Value &vRoot;
-  Bindings &autoArgs;
+  EvalState* state;
+  Value& vRoot;
+  Bindings& autoArgs;
 
   NixInspector(std::string expr);
-  void addAttrsToScope(Value &attrs);
+  void addAttrsToScope(Value& attrs);
   ref<Store> getEvalStore();
 
-  std::shared_ptr<Value> inspect(std::string &attrPaths);
-  ValueType v_type(const Value &value);
-  int32_t v_int(const Value &value);
-  float_t v_float(const Value &value);
-  bool v_bool(const Value &value);
-  std::string v_string(const Value &value);
-  std::string v_path(const Value &value);
+  std::shared_ptr<Value> inspect(std::string& attrPaths);
+  ValueType v_type(const Value& value);
+  int32_t v_int(const Value& value);
+  float_t v_float(const Value& value);
+  bool v_bool(const Value& value);
+  std::string v_string(const Value& value);
+  std::string v_path(const Value& value);
   // std::vector<NixAttr> v_attrs(const Value &value);
-  std::unique_ptr<std::vector<Value>> v_list(const Value &value);
-  std::shared_ptr<Value> v_child(const Value &value, std::string key);
-  nlohmann::json v_repr(const Value &value);
+  std::unique_ptr<std::vector<Value>> v_list(const Value& value);
+  std::shared_ptr<Value> v_child(const Value& value, std::string key);
+  nlohmann::json v_repr(const Value& value);
 
   void run(ref<Store> store) override {
     // so it doesn't complain about unused variables

@@ -146,9 +146,10 @@ impl UpdateContext {
 				if let Some(x) = model.visit_stack.current() {
 					if let Some(list) = model.path_data.current_list_mut(x) {
 						let cursor = list.state.selected().unwrap_or(0);
-						list.state.select(Some(
-							cursor.saturating_sub(view_data.current_list_height.max(1) as usize / 2),
-						));
+						list.state
+							.select(Some(cursor.saturating_sub(
+								view_data.current_list_height.max(1) as usize / 2,
+							)));
 					}
 				}
 			}

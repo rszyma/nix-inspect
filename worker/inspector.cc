@@ -1,23 +1,22 @@
 #include "inspector.hh"
 
 #include <memory>
-#include <nlohmann/json.hpp>
-#include <nix/expr/attr-path.hh>
-#include <nix/util/canon-path.hh>
 #include <nix/cmd/command.hh>
+#include <nix/expr/attr-path.hh>
 #include <nix/expr/eval-gc.hh>
+#include <nix/expr/eval-settings.hh>
 #include <nix/expr/eval.hh>
-#include <nix/store/local-fs-store.hh>
 #include <nix/expr/nixexpr.hh>
-#include <nix/main/shared.hh>
-#include <nix/store/store-api.hh>
 #include <nix/expr/value-to-json.hh>
 #include <nix/expr/value.hh>
 #include <nix/flake/settings.hh>
-#include <nix/expr/eval-settings.hh>
-#include <string>
-
+#include <nix/main/shared.hh>
+#include <nix/store/local-fs-store.hh>
+#include <nix/store/store-api.hh>
+#include <nix/util/canon-path.hh>
 #include <nix/util/logging.hh>
+#include <nlohmann/json.hpp>
+#include <string>
 
 const auto MAX_SIZE = 32768;
 
@@ -68,13 +67,13 @@ NixInspector::NixInspector(std::string expr)
 //   return vRes;
 // }
 
-std::shared_ptr<Value> NixInspector::inspect(std::string &attrPath) {
+std::shared_ptr<Value> NixInspector::inspect(std::string& attrPath) {
   // if (attrPath.length() == 0) {
   //   attrPath = "root";
   // } else {
   //   attrPath = "root." + attrPath;
   // }
-  Value &v(
+  Value& v(
       *findAlongAttrPath(*state, std::string(attrPath), autoArgs, vRoot).first
   );
   state->forceValue(v, v.determinePos(noPos));
@@ -83,16 +82,18 @@ std::shared_ptr<Value> NixInspector::inspect(std::string &attrPath) {
   return std::make_shared<Value>(vRes);
 }
 
-int32_t NixInspector::v_int(const Value &value) { return value.integer().value; }
-float_t NixInspector::v_float(const Value &value) { return value.fpoint(); }
-bool NixInspector::v_bool(const Value &value) { return value.boolean(); }
-std::string NixInspector::v_string(const Value &value) {
+int32_t NixInspector::v_int(const Value& value) {
+  return value.integer().value;
+}
+float_t NixInspector::v_float(const Value& value) { return value.fpoint(); }
+bool NixInspector::v_bool(const Value& value) { return value.boolean(); }
+std::string NixInspector::v_string(const Value& value) {
   return std::string(value.string_view());
 }
-std::string NixInspector::v_path(const Value &value) {
+std::string NixInspector::v_path(const Value& value) {
   return value.path().path.c_str();
 }
-nlohmann::json NixInspector::v_repr(const Value &value) {
+nlohmann::json NixInspector::v_repr(const Value& value) {
   switch (value.type()) {
     case nix::nAttrs: {
       auto collected = std::vector<std::string>();
@@ -135,7 +136,7 @@ nlohmann::json NixInspector::v_repr(const Value &value) {
 //   }
 //   return collected;
 // }
-std::unique_ptr<std::vector<Value>> NixInspector::v_list(const Value &value) {
+std::unique_ptr<std::vector<Value>> NixInspector::v_list(const Value& value) {
   auto collected = std::vector<Value>();
   auto listItems = value.listView();
   for (auto x : listItems) {
@@ -149,13 +150,13 @@ void init_nix_inspector() {
   nix::flakeSettings.configureEvalSettings(nix::evalSettings);
   logger = std::make_unique<CaptureLogger>();
 }
-ValueType NixInspector::v_type(const Value &value) { return value.type(); }
+ValueType NixInspector::v_type(const Value& value) { return value.type(); }
 
 // Gets a attribute at a specific name and if the passed value is a thunk it
 // evaluates it SAFETY: this function only safe to call if the value being
 // passed is an attrset or a thunk that results in an attrset
 std::shared_ptr<Value> NixInspector::v_child(
-    const Value &value, std::string key
+    const Value& value, std::string key
 ) {
   auto x = value.attrs()->get(state->symbols.create(std::string(key)));
   Value vRes;
