@@ -1,0 +1,12 @@
+[formatter.rustfmt]
+command = "rustfmt"
+includes = ["*.rs"]
+
+[formatter.nixfmt]
+command = "nixfmt"
+includes = ["*.nix"]
+
+[formatter.clang-format]
+command = "clang-format"
+options = [ "-i" ]
+includes = ["*.c", "*.cpp", "*.h", "*.hpp", "*.cc", "*.hh"]

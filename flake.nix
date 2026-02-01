@@ -40,6 +40,7 @@
               meson
               nlohmann_json
               nixVersions.nix_2_30.dev
+              treefmt
             ]);
         });
         packages.default = crateOutputs.packages.release;
