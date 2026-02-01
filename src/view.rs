@@ -1,6 +1,5 @@
 use ansi_to_tui::IntoText;
 use lazy_static::lazy_static;
-use ratatui::layout::Flex;
 use ratatui::text::Text;
 use ratatui::widgets::{Clear, Widget, Wrap};
 use ratatui::Frame;
@@ -87,15 +86,15 @@ pub fn view(model: &mut Model, f: &mut Frame) -> ViewData {
 				let inner = block.inner(outer);
 				view_data.current_list_height = inner.height;
 				f.render_widget(block, outer);
-				let _ = render_value_preview(f, data, inner);
+				render_value_preview(f, data, inner);
 			}
-			x @ _ => {
+			x => {
 				let current_list_block = current_frame();
 				let inner = current_list_block.inner(miller_layout[1]);
 				view_data.current_list_height = inner.height;
 				f.render_widget(current_list_block, miller_layout[1]);
 				if let Some(PathData::List(current_path_data)) = x {
-					let _ = render_list(
+					render_list(
 						f,
 						current_path_data,
 						inner,
@@ -104,10 +103,10 @@ pub fn view(model: &mut Model, f: &mut Frame) -> ViewData {
 						&model.prev_tab_completion,
 					);
 				}
-				let _ = render_preview(f, model, miller_layout[2], &p);
+				render_preview(f, model, miller_layout[2], &p);
 			}
 		},
-		x @ _ => {
+		x => {
 			let current_list_block = current_frame();
 			let current_inner = current_list_block.inner(miller_layout[1]);
 			view_data.current_list_height = current_inner.height;
@@ -270,7 +269,7 @@ pub fn render_list(
 				(Some(InputState::Active(nav_model)), Some(_)) => {
 					let search_str = prev_tab_completion
 						.as_deref()
-						.or_else(|| nav_model.input.split('.').last())
+						.or_else(|| nav_model.input.split('.').next_back())
 						.filter(|x| !x.is_empty());
 					ListItem::new(x.as_str()).style(search_str.map_or(
 						highlight_style,
@@ -298,7 +297,7 @@ pub fn render_previous_list(
 	inner: Rect,
 	p: &BrowserPath,
 ) {
-	let list = match path_data.get_mut(&p) {
+	let list = match path_data.get_mut(p) {
 		Some(PathData::List(list)) => list,
 		_ => return,
 	};
@@ -336,13 +335,12 @@ pub fn render_keymap(model: &Model, f: &mut Frame, rect: Rect) {
 	};
 	let texts = keymap
 		.iter()
-		.map(|(key, text)| {
+		.flat_map(|(key, text)| {
 			[
 				key.black().on_gray(),
 				Span::from(format!(" {text} ")).fg(Color::default()),
 			]
 		})
-		.flatten()
 		.collect::<Vec<_>>();
 	let paragraph = Paragraph::new(Line::from(texts)).alignment(Alignment::Center);
 	f.render_widget(paragraph, rect);
@@ -369,10 +367,9 @@ pub fn render_bottom(f: &mut Frame, model: &Model, inner: Rect) {
 		Rect::new(inner.left(), inner.bottom() - offset, inner.width, 1),
 	);
 
-	offset += 1;
-
 	// Render the search string in the bottom right corner of the container
 	if let InputState::Active(search_model) = &model.search_input {
+		offset += 1;
 		let render_text = format!("Search: {}", search_model.input.clone());
 		// ratatui does not have a concept of a "right overflow" to my understanding, so clip the
 		// text from the left manually if it starts overflowing
@@ -383,9 +380,9 @@ pub fn render_bottom(f: &mut Frame, model: &Model, inner: Rect) {
 			render_text,
 			Rect::new(inner.left(), inner.bottom() - offset, inner.width, 1),
 		);
-		offset += 1;
 	}
 	if let InputState::Active(navigator_state) = &model.path_navigator_input {
+		offset += 1;
 		let render_text = format!("Goto: {}", navigator_state.input.clone());
 		let render_text = &render_text[render_text.len().saturating_sub(inner.width as usize)..];
 		render_input(
@@ -393,10 +390,10 @@ pub fn render_bottom(f: &mut Frame, model: &Model, inner: Rect) {
 			render_text,
 			Rect::new(inner.left(), inner.bottom() - offset, inner.width, 1),
 		);
-		offset += 1;
 	}
 
 	if let InputState::Active(bookmark_input_state) = &model.new_bookmark_input {
+		offset += 1;
 		let render_text = format!("bookmark name: {}", bookmark_input_state.input.clone());
 		let render_text = &render_text[render_text.len().saturating_sub(inner.width as usize)..];
 		render_input(
@@ -404,7 +401,6 @@ pub fn render_bottom(f: &mut Frame, model: &Model, inner: Rect) {
 			render_text,
 			Rect::new(inner.left(), inner.bottom() - offset, inner.width, 1),
 		);
-		offset += 1;
 	}
 }
 
@@ -459,8 +455,8 @@ pub fn render_preview(f: &mut Frame, model: &mut Model, outer: Rect, current_pat
 
 	let selected_path = model
 		.path_data
-		.current_list(&current_path)
-		.and_then(|list| list.selected(&current_path));
+		.current_list(current_path)
+		.and_then(|list| list.selected(current_path));
 
 	if let Some(selected_path) = selected_path {
 		if let Some(value) = model.path_data.get_mut(&selected_path) {

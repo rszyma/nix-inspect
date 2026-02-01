@@ -109,6 +109,7 @@ impl WorkerHost {
 			}
 
 			child.kill().expect("killing child failed");
+			let _ = child.wait();
 		});
 
 		WorkerHost { tx, rx: result_rx }

@@ -1,13 +1,11 @@
 use std::{
 	env,
-	fs::{create_dir_all, File},
-	io::{stdout, Read},
+	fs::create_dir_all,
+	io::stdout,
 	path::{Path, PathBuf},
-	sync::Arc,
 };
 
 use clap::Parser;
-use color_eyre::eyre::OptionExt;
 use crossterm::{
 	terminal::{
 		disable_raw_mode, enable_raw_mode, size, EnterAlternateScreen, LeaveAlternateScreen,
@@ -161,12 +159,9 @@ fn main() -> color_eyre::Result<()> {
 
 	{
 		let worker_rx = worker_host.rx.clone();
-		std::thread::spawn(move || loop {
-			match worker_rx.recv() {
-				Ok((p, v)) => {
-					let _ = tx.send(Message::Data(p, v));
-				}
-				Err(_) => break,
+		std::thread::spawn(move || {
+			while let Ok((p, v)) = worker_rx.recv() {
+				let _ = tx.send(Message::Data(p, v));
 			}
 		});
 	}

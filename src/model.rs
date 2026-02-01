@@ -91,7 +91,7 @@ impl PathDataMap {
 		})
 	}
 	pub fn current_list_mut(&mut self, current_path: &BrowserPath) -> Option<&mut ListData> {
-		self.get_mut(&current_path).and_then(|x| match x {
+		self.get_mut(current_path).and_then(|x| match x {
 			PathData::List(data) => Some(data),
 			_ => None,
 		})
@@ -252,7 +252,7 @@ impl From<String> for BrowserPath {
 					cur = String::new();
 				}
 				'"' => {
-					while let Some(inner_c) = chars.next() {
+					for inner_c in chars.by_ref() {
 						if inner_c == '"' {
 							break;
 						}
@@ -399,9 +399,9 @@ pub struct Bookmark {
 	pub path: BrowserPath,
 }
 
-impl<'a> Into<Text<'a>> for Bookmark {
-	fn into(self) -> Text<'a> {
-		Text::raw(self.display)
+impl<'a> From<Bookmark> for Text<'a> {
+	fn from(val: Bookmark) -> Self {
+		Text::raw(val.display)
 	}
 }
 

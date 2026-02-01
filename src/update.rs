@@ -19,7 +19,7 @@ pub struct UpdateContext {
 
 pub fn save_config(path: PathBuf, config: Config) {
 	std::thread::spawn(move || {
-		let _ = std::fs::write(&path, &serde_json::to_string_pretty(&config).unwrap());
+		let _ = std::fs::write(&path, serde_json::to_string_pretty(&config).unwrap());
 	});
 }
 
@@ -33,7 +33,7 @@ impl UpdateContext {
 	}
 
 	pub fn maybe_reeval_path(&self, path: &BrowserPath, model: &Model) {
-		if model.path_data.get(&path).is_none() {
+		if model.path_data.get(path).is_none() {
 			let path = path.clone();
 			self.queue_reeval(&path);
 		}
@@ -46,7 +46,7 @@ impl UpdateContext {
 	}
 
 	pub fn maybe_reeval_selection_browser(&self, p: &BrowserPath, model: &Model) {
-		let current_value = match model.path_data.get(&p) {
+		let current_value = match model.path_data.get(p) {
 			Some(x) => x,
 			None => return,
 		};
@@ -54,7 +54,7 @@ impl UpdateContext {
 			PathData::List(x) => x,
 			_ => return,
 		};
-		let selected = match list.selected(&p) {
+		let selected = match list.selected(p) {
 			Some(x) => x,
 			None => return,
 		};
@@ -77,7 +77,7 @@ impl UpdateContext {
 			}
 			BrowserStackItem::Recents => {
 				if let Some(x) = model.selected_recent() {
-					self.maybe_reeval_path(&x, model);
+					self.maybe_reeval_path(x, model);
 				}
 			}
 			BrowserStackItem::Root => {}
@@ -97,16 +97,15 @@ impl UpdateContext {
 		msg: Message,
 	) -> color_eyre::Result<Option<Message>> {
 		match msg {
-			Message::TermEvent(event) => match event {
-				Event::Key(key) => {
+			Message::TermEvent(event) => {
+				if let Event::Key(key) = event {
 					if key.kind == event::KeyEventKind::Press {
-						if let Some(msg) = handle_key(key, &model) {
+						if let Some(msg) = handle_key(key, model) {
 							return Ok(Some(msg));
 						}
 					}
 				}
-				_ => {}
-			},
+			}
 			Message::Data(p, d) => {
 				let data = d.clone();
 				model
@@ -118,7 +117,7 @@ impl UpdateContext {
 							p.state.select(Some(cursor.min(d.list.len()).max(0)));
 							p.list = d.list;
 						}
-						x @ _ => *x.0 = x.1,
+						x => *x.0 = x.1,
 					})
 					.or_insert(d.clone());
 				self.maybe_reeval_selection(model);
@@ -148,8 +147,7 @@ impl UpdateContext {
 					if let Some(list) = model.path_data.current_list_mut(x) {
 						let cursor = list.state.selected().unwrap_or(0);
 						list.state.select(Some(
-							cursor.saturating_sub(view_data.current_list_height.max(1) as usize / 2)
-								as usize,
+							cursor.saturating_sub(view_data.current_list_height.max(1) as usize / 2),
 						));
 					}
 				}
@@ -409,7 +407,7 @@ impl UpdateContext {
 							.and_then(|x| x.selected(p));
 
 						model.config.bookmarks.push(Bookmark {
-							display: if name.len() > 0 {
+							display: if !name.is_empty() {
 								name.to_string()
 							} else {
 								p.0.last().unwrap_or(&"".to_string()).clone()
@@ -463,7 +461,7 @@ impl UpdateContext {
 				BrowserStackItem::BrowserPath(p) => {
 					if let Some(selected_item) = model
 						.path_data
-						.current_list(&p)
+						.current_list(p)
 						.and_then(|list| list.state.selected().and_then(|i| list.list.get(i)))
 					{
 						let x = p.child(selected_item.clone());
@@ -479,7 +477,7 @@ impl UpdateContext {
 				}
 				BrowserStackItem::Recents => {
 					if let Some(x) = model.selected_recent() {
-						self.maybe_reeval_selection_browser(&x, model);
+						self.maybe_reeval_selection_browser(x, model);
 						model.visit_stack.push_path(x.clone());
 					}
 				}
@@ -491,7 +489,7 @@ impl UpdateContext {
 						select_prev(&mut model.root_view_state, 3);
 					}
 					BrowserStackItem::BrowserPath(p) => {
-						if let Some(list) = model.path_data.current_list_mut(&p) {
+						if let Some(list) = model.path_data.current_list_mut(p) {
 							let cursor = list.state.selected().unwrap_or(0);
 							list.state.select(Some(prev(cursor, list.list.len())));
 						}
@@ -503,7 +501,7 @@ impl UpdateContext {
 						select_prev(&mut model.recents_view_state, model.recents.len());
 					}
 				}
-				self.maybe_reeval_current_selection(&x, model);
+				self.maybe_reeval_current_selection(x, model);
 			}
 			Message::ListDown => {
 				let x = model.visit_stack.last().unwrap_or(&BrowserStackItem::Root);
@@ -518,10 +516,10 @@ impl UpdateContext {
 						}
 					}
 					BrowserStackItem::BrowserPath(p) => {
-						if let Some(list) = model.path_data.current_list_mut(&p) {
+						if let Some(list) = model.path_data.current_list_mut(p) {
 							let cursor = list.state.selected().unwrap_or(0);
 							list.state.select(Some(next(cursor, list.list.len())));
-							let selected = list.selected(&p);
+							let selected = list.selected(p);
 							if let Some(selected) = selected {
 								if model.path_data.get(&selected).is_none() {
 									let _ = self.req_tx.send(selected);
@@ -537,7 +535,7 @@ impl UpdateContext {
 						select_next(&mut model.recents_view_state, model.recents.len());
 					}
 				}
-				self.maybe_reeval_current_selection(&x, model);
+				self.maybe_reeval_current_selection(x, model);
 			}
 			Message::Quit => model.running_state = RunningState::Stopped,
 		};
