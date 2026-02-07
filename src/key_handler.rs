@@ -69,12 +69,12 @@ pub fn handle_navigator_input(state: &InputModel, key: event::KeyEvent) -> Optio
 
 pub fn handle_normal_input(key: event::KeyEvent) -> Option<Message> {
 	match key.code {
-		KeyCode::Char('q') => Some(Message::Quit),
+		KeyCode::Char('q' | 'Q') | KeyCode::Esc => Some(Message::Quit),
 		KeyCode::Char('h') | KeyCode::Left => Some(Message::Back),
 		KeyCode::Char('j') | KeyCode::Down => Some(Message::ListDown),
 		KeyCode::Char('k') | KeyCode::Up => Some(Message::ListUp),
 		KeyCode::Char('l') | KeyCode::Right => Some(Message::EnterItem),
-		KeyCode::Char('f') | KeyCode::Char('/') => Some(Message::SearchEnter),
+		KeyCode::Char('f' | '/') => Some(Message::SearchEnter),
 		KeyCode::Char('s') => Some(Message::BookmarkInputEnter),
 		KeyCode::Char('r') => Some(Message::Refresh),
 		KeyCode::Char('d') => {
