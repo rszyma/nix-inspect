@@ -54,6 +54,7 @@
               ]);
           });
           packages.default = crateOutputs.packages.release;
+          packages.nix-inspect = crateOutputs.packages.release;
         };
     };
 }
