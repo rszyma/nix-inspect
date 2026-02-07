@@ -28,42 +28,37 @@ pub fn handle_key(key: event::KeyEvent, model: &Model) -> Option<Message> {
 }
 
 fn handle_search_input(state: &InputModel, key: event::KeyEvent) -> Option<Message> {
-	if !state.typing {
-		match key.code {
-			KeyCode::Char('n') => Some(Message::SearchNext),
-			KeyCode::Char('N') => Some(Message::SearchPrev),
-			KeyCode::Esc => Some(Message::SearchExit),
-			_ => None,
+	match key.code {
+		KeyCode::Char('n') if !state.typing => Some(Message::SearchNext),
+		KeyCode::Char('N') if !state.typing => Some(Message::SearchPrev),
+		KeyCode::Char('c' | 'C') if key.modifiers.contains(KeyModifiers::CONTROL) => {
+			Some(Message::SearchExit)
 		}
-	} else {
-		match key.code {
-			KeyCode::Esc => Some(Message::SearchExit),
-			_ => Some(Message::SearchInput(key)),
-		}
+		KeyCode::Esc => Some(Message::SearchExit),
+		_ => Some(Message::SearchInput(key)),
 	}
 }
 
 pub fn handle_bookmark_input(_: &InputModel, key: event::KeyEvent) -> Option<Message> {
 	match key.code {
-		KeyCode::Esc => Some(Message::BookmarkInputExit),
 		KeyCode::Enter => Some(Message::CreateBookmark),
+		KeyCode::Esc => Some(Message::BookmarkInputExit),
+		KeyCode::Char('c' | 'C') if key.modifiers.contains(KeyModifiers::CONTROL) => {
+			Some(Message::BookmarkInputExit)
+		}
 		_ => Some(Message::BookmarkInput(key)),
 	}
 }
 
 pub fn handle_navigator_input(state: &InputModel, key: event::KeyEvent) -> Option<Message> {
-	if !state.typing {
-		match key.code {
-			KeyCode::Char('n') => Some(Message::NavigatorNext),
-			KeyCode::Char('N') => Some(Message::NavigatorPrev),
-			KeyCode::Esc => Some(Message::NavigatorExit),
-			_ => Some(Message::NavigatorInput(key)),
+	match key.code {
+		KeyCode::Char('n') if !state.typing => Some(Message::NavigatorNext),
+		KeyCode::Char('N') if !state.typing => Some(Message::NavigatorPrev),
+		KeyCode::Char('c' | 'C') if key.modifiers.contains(KeyModifiers::CONTROL) => {
+			Some(Message::NavigatorExit)
 		}
-	} else {
-		match key.code {
-			KeyCode::Esc => Some(Message::NavigatorExit),
-			_ => Some(Message::NavigatorInput(key)),
-		}
+		KeyCode::Esc => Some(Message::NavigatorExit),
+		_ => Some(Message::NavigatorInput(key)),
 	}
 }
 
@@ -84,11 +79,8 @@ pub fn handle_normal_input(key: event::KeyEvent) -> Option<Message> {
 				Some(Message::DeleteBookmark)
 			}
 		}
-		KeyCode::Char('u') => {
-			if key.modifiers.contains(KeyModifiers::CONTROL) {
-				return Some(Message::PageUp);
-			}
-			None
+		KeyCode::Char('u') if key.modifiers.contains(KeyModifiers::CONTROL) => {
+			Some(Message::PageUp)
 		}
 		KeyCode::Char('.') => Some(Message::NavigatorEnter),
 		_ => None,
