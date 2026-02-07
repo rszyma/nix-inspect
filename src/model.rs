@@ -356,7 +356,11 @@ impl From<NixValue> for PathData {
 			NixValue::Attrs(attrs) => PathData::List(ListData {
 				list_type: ListType::Attrset,
 				state: ListState::default().with_selected(Some(0)),
-				list: attrs,
+				list: {
+					let mut attrs = attrs.clone();
+					attrs.sort();
+					attrs
+				},
 			}),
 			NixValue::List(size) => PathData::List(ListData {
 				list_type: ListType::List,
