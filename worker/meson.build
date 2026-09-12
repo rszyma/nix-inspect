@@ -1,4 +1,4 @@
-project( 'nix-inspect'
+project( 'nix-inspect-worker'
        , ['c', 'cpp']
        , default_options : ['cpp_std=gnu++20']
        , version: 'nightly'
@@ -7,7 +7,7 @@ project( 'nix-inspect'
 config_h = configuration_data()
 
 configure_file(
-  output: 'nix-inspect-config.h',
+  output: 'nix-inspect-worker-config.h',
   configuration: config_h,
 )
 
@@ -27,7 +27,7 @@ nix_all = [ dependency('nix-expr')
           ]
 
 nix_inspect = executable(
-  'nix-inspect',
+  'nix-inspect-worker',
   ['main.cc', 'inspector.cc'],
   dependencies: [
                 nix_all,

@@ -29,7 +29,7 @@
 
         installPhase = ''
           mkdir -p $out/bin
-          cp build/nix-inspect $out/bin/
+          cp build/nix-inspect-worker $out/bin/
         '';
       };
     in
@@ -39,7 +39,7 @@
       # configure crates
       nci.crates.${crateName} = {
         drvConfig = {
-          env.WORKER_BINARY_PATH = "${workerPackage}/bin/nix-inspect";
+          env.WORKER_BINARY_PATH = "${workerPackage}/bin/nix-inspect-worker";
         };
       };
     };
