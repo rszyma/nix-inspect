@@ -4,32 +4,37 @@ use std::process::{Command, Stdio};
 
 use crate::model::{BrowserPath, PathData};
 
+// `type` is the ValueType enum number (nix/expr/value.hh)
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(tag = "type", content = "data")]
 pub enum NixValue {
 	#[serde(rename = "0")]
 	Thunk,
 	#[serde(rename = "1")]
-	Int(i64),
+	Failed,
 	#[serde(rename = "2")]
-	Float(f64),
+	Int(i64),
 	#[serde(rename = "3")]
-	Bool(bool),
+	Float(f64),
 	#[serde(rename = "4")]
-	String(String),
+	Bool(bool),
 	#[serde(rename = "5")]
-	Path(String),
+	String(String),
 	#[serde(rename = "6")]
-	Null,
+	Path(String),
 	#[serde(rename = "7")]
-	Attrs(Vec<String>),
+	Null,
 	#[serde(rename = "8")]
-	List(usize),
+	Attrs(Vec<String>),
 	#[serde(rename = "9")]
-	Function,
+	List(usize),
 	#[serde(rename = "10")]
-	External,
+	Function,
 	#[serde(rename = "11")]
+	External,
+	/// Worker failed to evaluate/inspect the path (bad attr path, eval
+	/// error, ...). Not a Nix type.
+	#[serde(rename = "999")]
 	Error(String),
 }
 
