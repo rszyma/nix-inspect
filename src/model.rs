@@ -320,6 +320,7 @@ pub enum PathData {
 	Null,
 	Function,
 	External,
+	Failed,
 	Loading,
 	Error(String),
 }
@@ -337,6 +338,7 @@ impl fmt::Display for PathData {
 			PathData::Null => write!(f, "Null"),
 			PathData::Function => write!(f, "Function"),
 			PathData::External => write!(f, "External"),
+			PathData::Failed => write!(f, "Failed"),
 			PathData::Loading => write!(f, "Loading"),
 			PathData::Error(reason) => write!(f, "{}", reason),
 		}
@@ -369,6 +371,7 @@ impl From<NixValue> for PathData {
 			}),
 			NixValue::Function => PathData::Function,
 			NixValue::External => PathData::External,
+			NixValue::Failed => PathData::Failed,
 			NixValue::Error(e) => PathData::Error(e),
 		}
 	}
@@ -390,6 +393,7 @@ impl PathData {
 			PathData::Null => "Null",
 			PathData::Function => "Function",
 			PathData::External => "External",
+			PathData::Failed => "Failed",
 			PathData::Loading => "Loading",
 			PathData::Error(_) => "Error",
 		}

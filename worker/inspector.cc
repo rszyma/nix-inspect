@@ -121,6 +121,7 @@ nlohmann::json NixInspector::v_repr(const Value& value) {
     case nix::nExternal:
     case nix::nThunk:
     case nix::nFunction:
+    case nix::nFailed:
       return nullptr;
   }
   return nullptr;
@@ -148,7 +149,7 @@ void init_nix_inspector() {
   nix::initNix();
   nix::initGC();
   nix::flakeSettings.configureEvalSettings(nix::evalSettings);
-  logger = std::make_unique<CaptureLogger>();
+  logger = new CaptureLogger();
 }
 ValueType NixInspector::v_type(const Value& value) { return value.type(); }
 

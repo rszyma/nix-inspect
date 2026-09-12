@@ -20,7 +20,10 @@ int main() {
       };
       std::cout << out << std::endl;
     } catch (const std::exception& ex) {
-      nlohmann::json out = {{"type", "11"}, {"data", ex.what()}};
+      // "999" is our own tag for "the worker threw" (bad attr path, eval
+      // error, ...). Real type tags are small enum numbers, so it cannot
+      // collide with any of them.
+      nlohmann::json out = {{"type", "999"}, {"data", ex.what()}};
       std::cout << out << std::endl;
     } catch (...) {
       std::cout << "error" << std::endl;
