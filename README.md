@@ -72,3 +72,8 @@ and then reference it in your `environment.systemPackages`:
   ];
 }
 ```
+
+### Hacking
+
+1. Run `nix develop` to get dev tools (like clang, meson, etc).
+2. Run `meson setup worker/builddir worker` to get IDE completions for C++.
