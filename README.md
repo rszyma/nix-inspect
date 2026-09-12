@@ -3,11 +3,11 @@
 A ranger-like TUI for inspecting your nixos config and other arbitrary nix expressions.
 
 ```
-nix run github:bluskript/nix-inspect
+nix run github:rszyma/nix-inspect
 ```
 
 
-https://github.com/bluskript/nix-inspect/assets/52386117/21cfc643-653c-43c8-abf1-d75c07f15b7f
+https://github.com/rszyma/nix-inspect/assets/52386117/21cfc643-653c-43c8-abf1-d75c07f15b7f
 
 ### Motivation
 
@@ -60,7 +60,7 @@ This project has been added to nixpkgs, but there may have been changes not yet 
 ```nix
 {
   inputs = {
-    nix-inspect.url = "github:bluskript/nix-inspect";
+    nix-inspect.url = "github:rszyma/nix-inspect";
   };
 }
 ```
